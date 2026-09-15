@@ -45,7 +45,11 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transition: opacity 0.2s;
         }
-        .btn:active {
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn:active:not(:disabled) {
             opacity: 0.8;
         }
     </style>
@@ -53,35 +57,47 @@
 <body>
     <div class="container">
         <h1>SocialUkrBoost</h1>
-        <button id="watch-ad-btn" class="btn">Дивитись рекламу і отримати бонус</button>
+        <button id="watch-ad-btn" class="btn" disabled>Завантаження реклами...</button>
     </div>
 
     <script>
-        // Ініціалізація Telegram WebApp
         window.Telegram.WebApp.ready();
         const tg = window.Telegram.WebApp;
 
-        // Ініціалізація Adsgram із вашим UnitID (blockId: "47954")
-        const adController = window.Adsgram ? window.Adsgram.init({ blockId: "47954" }) : null;
+        let adController = null;
+        const watchBtn = document.getElementById("watch-ad-btn");
 
-        document.getElementById("watch-ad-btn").addEventListener("click", async () => {
+        // Ініціалізуємо контролер Adsgram
+        if (window.Adsgram) {
+            adController = window.Adsgram.init({ blockId: "47954" });
+            watchBtn.disabled = false;
+            watchBtn.innerText = "Дивитись рекламу і отримати бонус";
+        } else {
+            watchBtn.innerText = "Помилка завантаження реклами";
+        }
+
+        watchBtn.addEventListener("click", async () => {
             if (!adController) {
-                alert("Рекламний модуль ще не завантажено або сталася помилка.");
+                tg.showAlert("Рекламний модуль недоступний. Вимкніть блокувальники реклами.");
                 return;
             }
 
             try {
-                // Викликаємо показ реклами з винагородою
+                watchBtn.disabled = true;
+                watchBtn.innerText = "Завантаження...";
+                
+                // Викликаємо показ реклами
                 const result = await adController.show();
                 console.log("Рекламу переглянуто успішно", result);
                 
                 tg.showAlert("Дякуємо за перегляд! Нагороду успішно зараховано.");
                 
-                // Тут можна буде додати запит до вашого бекенду або бота для фіксації перегляду та нарахування балів
-                
             } catch (err) {
                 console.warn("Рекламу закрито достроково або сталася помилка", err);
                 tg.showAlert("Рекламу було закрито раніше. Нагороду не нараховано.");
+            } finally {
+                watchBtn.disabled = false;
+                watchBtn.innerText = "Дивитись рекламу і отримати бонус";
             }
         });
     </script>
