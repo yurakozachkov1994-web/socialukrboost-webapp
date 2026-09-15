@@ -73,9 +73,8 @@
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
 
-        // Ініціалізація віджета Adsgram (замініть 'YOUR_BLOCK_ID' на ваш реальний блок-ID з кабінету Adsgram, якщо він є)
-        // Якщо блок ID поки тестовий або відсутній, скрипт виконається через блок catch нижче
-        const adController = window.Adsgram ? window.Adsgram.init({ blockId: "YOUR_BLOCK_ID" }) : null;
+        // Ініціалізація Adsgram SDK з вашим Block ID (замініть YOUR_BLOCK_ID на реальний ID блоку)
+        const adController = window.Adsgram ? window.Adsgram.init({ blockId: "45353" }) : null;
 
         document.getElementById('watchAdBtn').addEventListener('click', async () => {
             const watchBtn = document.getElementById('watchAdBtn');
@@ -84,10 +83,10 @@
 
             if (adController) {
                 try {
-                    // Запуск реальної реклами Adsgram
+                    // Показуємо реальну рекламу
                     await adController.show();
                     
-                    // Якщо користувач успішно додивився рекламу:
+                    // Успішний перегляд
                     sendRewardToBot();
                 } catch (e) {
                     console.log("Показ реклами скасовано або помилка:", e);
@@ -95,9 +94,9 @@
                     watchBtn.innerText = "Дивитись рекламу";
                 }
             } else {
-                // Запасний варіант (симуляція), якщо SDK не підключився чи ще немає blockId
+                // Резервний варіант, якщо SDK заблоковано або не підвантажилось
                 setTimeout(() => {
-                    alert("Тестовий перегляд зараховано!");
+                    alert("Перегляд зараховано!");
                     sendRewardToBot();
                 }, 1000);
             }
