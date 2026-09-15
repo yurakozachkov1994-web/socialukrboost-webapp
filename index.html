@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SocialUkrBoost App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://sad.adsgram.ai/js/sad.js"></script>
 
     <style>
         body {
@@ -56,7 +55,7 @@
 <body>
     <div class="container">
         <h1>SocialUkrBoost</h1>
-        <button id="watch-ad-btn" class="btn" disabled>Завантаження реклами...</button>
+        <button id="watch-ad-btn" class="btn" disabled>Завантаження SDK...</button>
         <div id="debug-log"></div>
     </div>
 
@@ -68,39 +67,45 @@
         const watchBtn = document.getElementById("watch-ad-btn");
         const debugLog = document.getElementById("debug-log");
 
-        function logError(text) {
-            console.error(text);
-            debugLog.innerText = text;
-        }
+        // Динамічне підключення скрипта з відстеженням помилок завантаження
+        const script = document.createElement('script');
+        script.src = 'https://sad.adsgram.ai/js/sad.js';
+        script.async = true;
 
-        // Перевіряємо наявність об'єкта Adsgram
-        if (typeof window.Adsgram !== "undefined") {
+        script.onload = () => {
             try {
-                adController = window.Adsgram.init({ blockId: "47954" });
-                watchBtn.disabled = false;
-                watchBtn.innerText = "Дивитись рекламу і отримати бонус";
+                if (window.Adsgram) {
+                    adController = window.Adsgram.init({ blockId: "47954" });
+                    watchBtn.disabled = false;
+                    watchBtn.innerText = "Дивитись рекламу і отримати бонус";
+                } else {
+                    debugLog.innerText = "Помилка: Adsgram не знайдено після завантаження скрипта.";
+                }
             } catch (e) {
-                logError("Помилка init(): " + e.message);
+                debugLog.innerText = "Помилка ініціалізації: " + e.message;
             }
-        } else {
-            logError("Помилка: об'єкт window.Adsgram не знайдено (скрипт заблоковано або не підвантажився).");
-        }
+        };
+
+        script.onerror = () => {
+            debugLog.innerText = "Не вдалося завантажити скрипт Adsgram (можливе блокування мережі).";
+        };
+
+        document.head.appendChild(script);
 
         watchBtn.addEventListener("click", async () => {
             if (!adController) {
-                tg.showAlert("Контролер реклами не ініціалізовано.");
+                tg.showAlert("Рекламний модуль не готовий.");
                 return;
             }
 
             try {
                 watchBtn.disabled = true;
-                watchBtn.innerText = "Завантаження...";
-                
+                watchBtn.innerText = "Перегляд...";
                 const result = await adController.show();
-                tg.showAlert("Успіх! Нагороду зараховано.");
+                tg.showAlert("Дякуємо! Нагороду зараховано.");
             } catch (err) {
-                logError("Помилка показ реклами: " + JSON.stringify(err));
-                tg.showAlert("Рекламу закрито або сталася помилка.");
+                debugLog.innerText = "Помилка показу: " + JSON.stringify(err);
+                tg.showAlert("Рекламу було закрито раніше.");
             } finally {
                 watchBtn.disabled = false;
                 watchBtn.innerText = "Дивитись рекламу і отримати бонус";
