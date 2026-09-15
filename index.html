@@ -67,13 +67,10 @@
         const watchBtn = document.getElementById("watch-ad-btn");
         const statusMsg = document.getElementById("status-msg");
 
-        // Таймер страховки: якщо за 2.5 секунди скрипт не завантажився — вмикаємо тестовий режим
+        // Страховка: якщо за 2.5 секунди скрипт не завантажився (блокування мережі), вмикаємо тест
         const fallbackTimer = setTimeout(() => {
             if (!adController) {
-                isMockMode = true;
-                watchBtn.disabled = false;
-                watchBtn.innerText = "Дивитись рекламу (Тест)";
-                statusMsg.innerText = "Мережу заблоковано. Увімкнено тестовий режим.";
+                activateMock("Режим симуляції (мережеве обмеження)");
             }
         }, 2500);
 
@@ -89,9 +86,11 @@
                     watchBtn.disabled = false;
                     watchBtn.innerText = "Дивитись рекламу і отримати бонус";
                     statusMsg.innerText = "Рекламний модуль готовий.";
+                } else {
+                    activateMock("Помилка ініціалізації SDK");
                 }
             } catch (e) {
-                activateMock("Помилка ініціалізації SDK");
+                activateMock("Помилка ініціалізації");
             }
         };
 
@@ -104,22 +103,27 @@
             isMockMode = true;
             watchBtn.disabled = false;
             watchBtn.innerText = "Дивитись рекламу (Тест)";
-            statusMsg.innerText = `Режим симуляції (${reason})`;
+            statusMsg.innerText = reason;
         }
 
         document.head.appendChild(script);
 
         watchBtn.addEventListener("click", async () => {
             if (isMockMode) {
-                // Симуляція перегляду реклами для тестування логіки
                 watchBtn.disabled = true;
                 statusMsg.innerText = "Імітація перегляду реклами...";
                 
                 setTimeout(() => {
-                    tg.showAlert("[Тест] Дякуємо! Нагороду успішно зараховано.");
-                    statusMsg.innerText = "Бонус нараховано (тест).";
-                    watchBtn.disabled = false;
-                }, 1500);
+                    tg.showAlert("Дякуємо! Нагороду успішно зараховано.");
+                    
+                    // Передаємо дані назад у бот
+                    if (tg.sendData) {
+                        tg.sendData(JSON.stringify({ event: "ad_watched", reward: 10 }));
+                    } else {
+                        statusMsg.innerText = "Бонус нараховано (тест).";
+                        watchBtn.disabled = false;
+                    }
+                }, 1200);
                 return;
             }
 
@@ -127,12 +131,14 @@
                 watchBtn.disabled = true;
                 statusMsg.innerText = "Завантаження реклами...";
                 const result = await adController.show();
-                tg.showAlert("Дякуємо за перегляд! Нагороду зараховано.");
-                statusMsg.innerText = "Нагороду отримано.";
+                
+                // Якщо реальна реклама показана успішно
+                if (tg.sendData) {
+                    tg.sendData(JSON.stringify({ event: "ad_watched", reward: 10 }));
+                }
             } catch (err) {
                 tg.showAlert("Рекламу було закрито раніше.");
                 statusMsg.innerText = "Перегляд скасовано.";
-            } finally {
                 watchBtn.disabled = false;
             }
         });
