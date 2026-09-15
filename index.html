@@ -67,26 +67,44 @@
         let adController = null;
         const watchBtn = document.getElementById("watch-ad-btn");
 
-        // Ініціалізуємо контролер Adsgram
-        if (window.Adsgram) {
-            adController = window.Adsgram.init({ blockId: "47954" });
-            watchBtn.disabled = false;
-            watchBtn.innerText = "Дивитись рекламу і отримати бонус";
-        } else {
-            watchBtn.innerText = "Помилка завантаження реклами";
+        // Функція ініціалізації з перевіркою
+        function initAdsgram() {
+            if (window.Adsgram) {
+                try {
+                    adController = window.Adsgram.init({ blockId: "47954" });
+                    watchBtn.disabled = false;
+                    watchBtn.innerText = "Дивитись рекламу і отримати бонус";
+                    console.log("Adsgram ініціалізовано успішно");
+                } catch (e) {
+                    console.error("Помилка ініціалізації Adsgram:", e);
+                    watchBtn.innerText = "Помилка ініціалізації";
+                }
+            } else {
+                // Якщо скрипт ще не підвантажився, чекаємо ще пів секунди
+                setTimeout(initAdsgram, 500);
+            }
         }
+
+        // Запускаємо перевірку при завантаженні сторінки
+        window.addEventListener("load", () => {
+            setTimeout(initAdsgram, 300);
+        });
 
         watchBtn.addEventListener("click", async () => {
             if (!adController) {
-                tg.showAlert("Рекламний модуль недоступний. Вимкніть блокувальники реклами.");
-                return;
+                // Спробуємо ініціалізувати ще раз на випадок кліку
+                if (window.Adsgram) {
+                    adController = window.Adsgram.init({ blockId: "47954" });
+                } else {
+                    tg.showAlert("Рекламний модуль не завантажився. Перевірте з'єднання.");
+                    return;
+                }
             }
 
             try {
                 watchBtn.disabled = true;
-                watchBtn.innerText = "Завантаження...";
+                watchBtn.innerText = "Завантаження реклами...";
                 
-                // Викликаємо показ реклами
                 const result = await adController.show();
                 console.log("Рекламу переглянуто успішно", result);
                 
@@ -94,7 +112,7 @@
                 
             } catch (err) {
                 console.warn("Рекламу закрито достроково або сталася помилка", err);
-                tg.showAlert("Рекламу було закрито раніше. Нагороду не нараховано.");
+                tg.showAlert("Рекламу було закрито раніше або сталася помилка.");
             } finally {
                 watchBtn.disabled = false;
                 watchBtn.innerText = "Дивитись рекламу і отримати бонус";
