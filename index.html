@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SocialUkrBoost App</title>
-    <!-- Підключаємо Telegram Web App JS -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <!-- Підключаємо Adsgram SDK -->
     <script src="https://sad.adsgram.ai/js/sad.js"></script>
 
     <style>
@@ -43,14 +40,16 @@
             width: 100%;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: opacity 0.2s;
         }
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-        .btn:active:not(:disabled) {
-            opacity: 0.8;
+        #debug-log {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #ff3b30;
+            word-break: break-all;
         }
     </style>
 </head>
@@ -58,6 +57,7 @@
     <div class="container">
         <h1>SocialUkrBoost</h1>
         <button id="watch-ad-btn" class="btn" disabled>Завантаження реклами...</button>
+        <div id="debug-log"></div>
     </div>
 
     <script>
@@ -66,53 +66,41 @@
 
         let adController = null;
         const watchBtn = document.getElementById("watch-ad-btn");
+        const debugLog = document.getElementById("debug-log");
 
-        // Функція ініціалізації з перевіркою
-        function initAdsgram() {
-            if (window.Adsgram) {
-                try {
-                    adController = window.Adsgram.init({ blockId: "47954" });
-                    watchBtn.disabled = false;
-                    watchBtn.innerText = "Дивитись рекламу і отримати бонус";
-                    console.log("Adsgram ініціалізовано успішно");
-                } catch (e) {
-                    console.error("Помилка ініціалізації Adsgram:", e);
-                    watchBtn.innerText = "Помилка ініціалізації";
-                }
-            } else {
-                // Якщо скрипт ще не підвантажився, чекаємо ще пів секунди
-                setTimeout(initAdsgram, 500);
-            }
+        function logError(text) {
+            console.error(text);
+            debugLog.innerText = text;
         }
 
-        // Запускаємо перевірку при завантаженні сторінки
-        window.addEventListener("load", () => {
-            setTimeout(initAdsgram, 300);
-        });
+        // Перевіряємо наявність об'єкта Adsgram
+        if (typeof window.Adsgram !== "undefined") {
+            try {
+                adController = window.Adsgram.init({ blockId: "47954" });
+                watchBtn.disabled = false;
+                watchBtn.innerText = "Дивитись рекламу і отримати бонус";
+            } catch (e) {
+                logError("Помилка init(): " + e.message);
+            }
+        } else {
+            logError("Помилка: об'єкт window.Adsgram не знайдено (скрипт заблоковано або не підвантажився).");
+        }
 
         watchBtn.addEventListener("click", async () => {
             if (!adController) {
-                // Спробуємо ініціалізувати ще раз на випадок кліку
-                if (window.Adsgram) {
-                    adController = window.Adsgram.init({ blockId: "47954" });
-                } else {
-                    tg.showAlert("Рекламний модуль не завантажився. Перевірте з'єднання.");
-                    return;
-                }
+                tg.showAlert("Контролер реклами не ініціалізовано.");
+                return;
             }
 
             try {
                 watchBtn.disabled = true;
-                watchBtn.innerText = "Завантаження реклами...";
+                watchBtn.innerText = "Завантаження...";
                 
                 const result = await adController.show();
-                console.log("Рекламу переглянуто успішно", result);
-                
-                tg.showAlert("Дякуємо за перегляд! Нагороду успішно зараховано.");
-                
+                tg.showAlert("Успіх! Нагороду зараховано.");
             } catch (err) {
-                console.warn("Рекламу закрито достроково або сталася помилка", err);
-                tg.showAlert("Рекламу було закрито раніше або сталася помилка.");
+                logError("Помилка показ реклами: " + JSON.stringify(err));
+                tg.showAlert("Рекламу закрито або сталася помилка.");
             } finally {
                 watchBtn.disabled = false;
                 watchBtn.innerText = "Дивитись рекламу і отримати бонус";
