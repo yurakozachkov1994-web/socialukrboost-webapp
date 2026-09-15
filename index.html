@@ -44,19 +44,18 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
-        #debug-log {
+        #status-msg {
             margin-top: 15px;
-            font-size: 12px;
-            color: #ff3b30;
-            word-break: break-all;
+            font-size: 13px;
+            color: #666;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>SocialUkrBoost</h1>
-        <button id="watch-ad-btn" class="btn" disabled>Завантаження SDK...</button>
-        <div id="debug-log"></div>
+        <button id="watch-ad-btn" class="btn">Отримати бонус за перегляд</button>
+        <div id="status-msg">Підготовка рекламного блоку...</div>
     </div>
 
     <script>
@@ -65,50 +64,55 @@
 
         let adController = null;
         const watchBtn = document.getElementById("watch-ad-btn");
-        const debugLog = document.getElementById("debug-log");
+        const statusMsg = document.getElementById("status-msg");
 
-        // Динамічне підключення скрипта з відстеженням помилок завантаження
-        const script = document.createElement('script');
-        script.src = 'https://sad.adsgram.ai/js/sad.js';
-        script.async = true;
+        // Функція безпечного завантаження SDK
+        function loadAdsgramScript() {
+            const script = document.createElement('script');
+            script.src = 'https://sad.adsgram.ai/js/sad.js';
+            script.async = true;
 
-        script.onload = () => {
-            try {
-                if (window.Adsgram) {
-                    adController = window.Adsgram.init({ blockId: "47954" });
-                    watchBtn.disabled = false;
-                    watchBtn.innerText = "Дивитись рекламу і отримати бонус";
-                } else {
-                    debugLog.innerText = "Помилка: Adsgram не знайдено після завантаження скрипта.";
+            script.onload = () => {
+                try {
+                    if (window.Adsgram) {
+                        adController = window.Adsgram.init({ blockId: "47954" });
+                        statusMsg.innerText = "Рекламний модуль готовий.";
+                    } else {
+                        statusMsg.innerText = "Модуль реклами тимчасово недоступний.";
+                    }
+                } catch (e) {
+                    statusMsg.innerText = "Помилка ініціалізації модуля.";
                 }
-            } catch (e) {
-                debugLog.innerText = "Помилка ініціалізації: " + e.message;
-            }
-        };
+            };
 
-        script.onerror = () => {
-            debugLog.innerText = "Не вдалося завантажити скрипт Adsgram (можливе блокування мережі).";
-        };
+            script.onerror = () => {
+                statusMsg.innerText = "Не вдалося з'єднатися з рекламним сервером.";
+            };
 
-        document.head.appendChild(script);
+            document.head.appendChild(script);
+        }
+
+        loadAdsgramScript();
 
         watchBtn.addEventListener("click", async () => {
             if (!adController) {
-                tg.showAlert("Рекламний модуль не готовий.");
+                tg.showAlert("Реклама зараз недоступна через обмеження мережі. Спробуйте пізніше.");
                 return;
             }
 
             try {
                 watchBtn.disabled = true;
-                watchBtn.innerText = "Перегляд...";
+                statusMsg.innerText = "Завантаження реклами...";
+                
                 const result = await adController.show();
-                tg.showAlert("Дякуємо! Нагороду зараховано.");
+                tg.showAlert("Дякуємо за перегляд! Нагороду зараховано.");
+                statusMsg.innerText = "Нагороду успішно отримано.";
             } catch (err) {
-                debugLog.innerText = "Помилка показу: " + JSON.stringify(err);
-                tg.showAlert("Рекламу було закрито раніше.");
+                console.warn("Рекламу закрито", err);
+                tg.showAlert("Рекламу було закрито раніше. Нагороду не нараховано.");
+                statusMsg.innerText = "Перегляд скасовано.";
             } finally {
                 watchBtn.disabled = false;
-                watchBtn.innerText = "Дивитись рекламу і отримати бонус";
             }
         });
     </script>
