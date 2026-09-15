@@ -3,143 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SocialUkrBoost App</title>
+    <title>Social Boost | Просування</title>
+    <!-- Підключаємо офіційний скрипт Telegram Web App -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #222222);
-            margin: 0;
-            padding: 20px;
+            color: var(--tg-theme-text-color, #000000);
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
+            margin: 0;
         }
         .container {
             text-align: center;
+            padding: 20px;
             max-width: 400px;
             width: 100%;
         }
-        h1 {
-            font-size: 24px;
+        h2 {
             margin-bottom: 20px;
+            font-size: 22px;
         }
         .btn {
-            background-color: var(--tg-theme-button-color, #2481cc);
+            background-color: var(--tg-theme-button-color, #2ea6ff);
             color: var(--tg-theme-button-text-color, #ffffff);
             border: none;
             border-radius: 12px;
             padding: 14px 20px;
             font-size: 16px;
             font-weight: 600;
-            width: 100%;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            margin-bottom: 12px;
+            transition: opacity 0.2s;
         }
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .btn:active {
+            opacity: 0.8;
         }
-        #status-msg {
-            margin-top: 15px;
+        .status {
             font-size: 13px;
-            color: #666;
+            color: var(--tg-theme-hint-color, #707579);
+            margin-top: 5px;
+        }
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #707579);
         }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>SocialUkrBoost</h1>
-        <button id="watch-ad-btn" class="btn" disabled>Завантаження...</button>
-        <div id="status-msg">Підключення до рекламної мережі...</div>
+        <h2>SocialUkrBoost</h2>
+        
+        <button class="btn" id="watchAdBtn">Дивитись рекламу (Тест)</button>
+        <div class="status" id="statusText">Режим симуляції (Сервер реклами недоступний)</div>
     </div>
 
+    <div class="footer">@socialukrboost_bot</div>
+
     <script>
+        // Ініціалізація Telegram Web App
         window.Telegram.WebApp.ready();
-        const tg = window.Telegram.WebApp;
+        window.Telegram.WebApp.expand();
 
-        let adController = null;
-        let isMockMode = false;
-        const watchBtn = document.getElementById("watch-ad-btn");
-        const statusMsg = document.getElementById("status-msg");
+        const watchAdBtn = document.getElementById('watchAdBtn');
+        const statusText = document.getElementById('statusText');
 
-        // Страховка: якщо за 2.5 секунди скрипт не завантажився (блокування мережі), вмикаємо тест
-        const fallbackTimer = setTimeout(() => {
-            if (!adController) {
-                activateMock("Режим симуляції (мережеве обмеження)");
-            }
-        }, 2500);
+        watchAdBtn.addEventListener('click', () => {
+            // Тут ви можете згодом підключити реальний SDK реклами (наприклад, Adsgram)
+            // Зараз працює симуляція успішного перегляду:
 
-        const script = document.createElement('script');
-        script.src = 'https://sad.adsgram.ai/js/sad.js';
-        script.async = true;
+            statusText.innerText = "Рекламу переглянуто! Нараховуємо бонус...";
 
-        script.onload = () => {
-            clearTimeout(fallbackTimer);
-            try {
-                if (window.Adsgram) {
-                    adController = window.Adsgram.init({ blockId: "47954" });
-                    watchBtn.disabled = false;
-                    watchBtn.innerText = "Дивитись рекламу і отримати бонус";
-                    statusMsg.innerText = "Рекламний модуль готовий.";
-                } else {
-                    activateMock("Помилка ініціалізації SDK");
-                }
-            } catch (e) {
-                activateMock("Помилка ініціалізації");
-            }
-        };
+            // Формуємо дані для відправки в бот (сума 0.01)
+            const payload = JSON.stringify({
+                event: "ad_watched",
+                reward: 0.01
+            });
 
-        script.onerror = () => {
-            activateMock("Сервер реклами недоступний");
-        };
-
-        function activateMock(reason) {
-            clearTimeout(fallbackTimer);
-            isMockMode = true;
-            watchBtn.disabled = false;
-            watchBtn.innerText = "Дивитись рекламу (Тест)";
-            statusMsg.innerText = reason;
-        }
-
-        document.head.appendChild(script);
-
-        watchBtn.addEventListener("click", async () => {
-            if (isMockMode) {
-                watchBtn.disabled = true;
-                statusMsg.innerText = "Імітація перегляду реклами...";
-                
-                setTimeout(() => {
-                    tg.showAlert("Дякуємо! Нагороду успішно зараховано.");
-                    
-                    // Передаємо дані назад у бот
-                    if (tg.sendData) {
-                        tg.sendData(JSON.stringify({ event: "ad_watched", reward: 10 }));
-                    } else {
-                        statusMsg.innerText = "Бонус нараховано (тест).";
-                        watchBtn.disabled = false;
-                    }
-                }, 1200);
-                return;
-            }
-
-            try {
-                watchBtn.disabled = true;
-                statusMsg.innerText = "Завантаження реклами...";
-                const result = await adController.show();
-                
-                // Якщо реальна реклама показана успішно
-                if (tg.sendData) {
-                    tg.sendData(JSON.stringify({ event: "ad_watched", reward: 10 }));
-                }
-            } catch (err) {
-                tg.showAlert("Рекламу було закрито раніше.");
-                statusMsg.innerText = "Перегляд скасовано.";
-                watchBtn.disabled = false;
+            // Відправляємо дані назад у Telegram-бот та закриваємо міні-додаток
+            if (window.Telegram.WebApp.sendData) {
+                window.Telegram.WebApp.sendData(payload);
+            } else {
+                console.log("SendData не підтримується у цьому браузері:", payload);
+                alert("Готово! Але запуск йде поза Telegram.");
             }
         });
     </script>
