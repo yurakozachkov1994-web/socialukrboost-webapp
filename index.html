@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SocialUkrBoost | Просування</title>
+    <!-- Підключаємо Telegram Web App -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Підключаємо офіційний Adsgram SDK -->
+    <script src="https://sad.adsgram.ai/js/adsgram.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -15,6 +18,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            height: 100vh;
+            box-sizing: border-box;
         }
         .card {
             background: var(--tg-theme-secondary-bg-color, #f1f1f1);
@@ -24,7 +30,6 @@
             max-width: 360px;
             text-align: center;
             box-sizing: border-box;
-            margin-top: 20px;
         }
         h2 { margin-top: 0; font-size: 20px; }
         p { font-size: 14px; color: var(--tg-theme-hint-color, #707579); }
@@ -40,6 +45,14 @@
             cursor: pointer;
             width: 100%;
             margin-top: 10px;
+            transition: opacity 0.2s;
+        }
+        .btn:active { opacity: 0.8; }
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #707579);
         }
     </style>
 </head>
@@ -54,22 +67,55 @@
         <button class="btn" id="watchAdBtn">Дивитись рекламу</button>
     </div>
 
+    <div class="footer">@socialukrboost_bot</div>
+
     <script>
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
 
-        document.getElementById('watchAdBtn').addEventListener('click', () => {
-            // Тут надалі буде інтеграція Adsgram SDK
-            alert("Тестовий перегляд зараховано!");
+        // Ініціалізація віджета Adsgram (замініть 'YOUR_BLOCK_ID' на ваш реальний блок-ID з кабінету Adsgram, якщо він є)
+        // Якщо блок ID поки тестовий або відсутній, скрипт виконається через блок catch нижче
+        const adController = window.Adsgram ? window.Adsgram.init({ blockId: "YOUR_BLOCK_ID" }) : null;
+
+        document.getElementById('watchAdBtn').addEventListener('click', async () => {
+            const watchBtn = document.getElementById('watchAdBtn');
+            watchBtn.disabled = true;
+            watchBtn.innerText = "Завантаження реклами...";
+
+            if (adController) {
+                try {
+                    // Запуск реальної реклами Adsgram
+                    await adController.show();
+                    
+                    // Якщо користувач успішно додивився рекламу:
+                    sendRewardToBot();
+                } catch (e) {
+                    console.log("Показ реклами скасовано або помилка:", e);
+                    watchBtn.disabled = false;
+                    watchBtn.innerText = "Дивитись рекламу";
+                }
+            } else {
+                // Запасний варіант (симуляція), якщо SDK не підключився чи ще немає blockId
+                setTimeout(() => {
+                    alert("Тестовий перегляд зараховано!");
+                    sendRewardToBot();
+                }, 1000);
+            }
+        });
+
+        function sendRewardToBot() {
+            const watchBtn = document.getElementById('watchAdBtn');
+            watchBtn.innerText = "Готово!";
             
             const payload = JSON.stringify({
                 event: "ad_watched",
                 reward: 0.01
             });
+
             if (window.Telegram.WebApp.sendData) {
                 window.Telegram.WebApp.sendData(payload);
             }
-        });
+        }
     </script>
 </body>
 </html>
