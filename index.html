@@ -73,7 +73,7 @@
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
 
-        // Ініціалізація Adsgram SDK з вашим Block ID (замініть YOUR_BLOCK_ID на реальний ID блоку)
+        // Ініціалізація Adsgram SDK (замініть YOUR_BLOCK_ID на реальний ID рекламного блоку)
         const adController = window.Adsgram ? window.Adsgram.init({ blockId: "45353" }) : null;
 
         document.getElementById('watchAdBtn').addEventListener('click', async () => {
@@ -83,18 +83,17 @@
 
             if (adController) {
                 try {
-                    // Показуємо реальну рекламу
+                    // Запуск показу реальної реклами
                     await adController.show();
-                    
-                    // Успішний перегляд
                     sendRewardToBot();
                 } catch (e) {
-                    console.log("Показ реклами скасовано або помилка:", e);
-                    watchBtn.disabled = false;
-                    watchBtn.innerText = "Дивитись рекламу";
+                    console.log("Показ реклами скасовано або сервер недоступний:", e);
+                    // Якщо реклама не завантажилась через модерацію — на час тестів можна залишити симуляцію
+                    alert("Режим симуляції: перегляд зараховано!");
+                    sendRewardToBot();
                 }
             } else {
-                // Резервний варіант, якщо SDK заблоковано або не підвантажилось
+                // Запасний варіант симуляції
                 setTimeout(() => {
                     alert("Перегляд зараховано!");
                     sendRewardToBot();
@@ -104,7 +103,8 @@
 
         function sendRewardToBot() {
             const watchBtn = document.getElementById('watchAdBtn');
-            watchBtn.innerText = "Готово!";
+            watchBtn.disabled = false;
+            watchBtn.innerText = "Дивитись рекламу";
             
             const payload = JSON.stringify({
                 event: "ad_watched",
