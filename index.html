@@ -2,118 +2,203 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SocialUkrBoost | Просування</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SocialUkrBoost | Монетизація</title>
     <!-- Підключаємо Telegram Web App -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <!-- Підключаємо офіційний Adsgram SDK -->
     <script src="https://sad.adsgram.ai/js/adsgram.js"></script>
     <style>
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #ffffff);
+            --text-color: var(--tg-theme-text-color, #000000);
+            --hint-color: var(--tg-theme-hint-color, #707579);
+            --card-bg: var(--tg-theme-secondary-bg-color, #f4f4f5);
+            --btn-color: var(--tg-theme-button-color, #2481cc);
+            --btn-text: var(--tg-theme-button-text-color, #ffffff);
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
+            padding: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             box-sizing: border-box;
         }
-        .card {
-            background: var(--tg-theme-secondary-bg-color, #f1f1f1);
-            border-radius: 16px;
-            padding: 20px;
+
+        .container {
             width: 100%;
-            max-width: 360px;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 24px 20px;
             text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             box-sizing: border-box;
         }
-        h2 { margin-top: 0; font-size: 20px; }
-        p { font-size: 14px; color: var(--tg-theme-hint-color, #707579); }
-        .balance { font-size: 18px; font-weight: bold; margin: 15px 0; }
+
+        h2 {
+            margin: 0 0 8px 0;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        p {
+            margin: 0 0 20px 0;
+            font-size: 14px;
+            color: var(--hint-color);
+            line-height: 1.4;
+        }
+
+        .balance-box {
+            background: var(--bg-color);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .balance-value {
+            font-weight: 700;
+            color: var(--btn-color);
+        }
+
         .btn {
-            background-color: var(--tg-theme-button-color, #2ea6ff);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            background-color: var(--btn-color);
+            color: var(--btn-text);
             border: none;
-            border-radius: 12px;
-            padding: 14px;
+            border-radius: 14px;
+            padding: 16px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
-            margin-top: 10px;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s, transform 0.1s;
         }
-        .btn:active { opacity: 0.8; }
+
+        .btn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-msg {
+            margin-top: 12px;
+            font-size: 13px;
+            min-height: 18px;
+            color: var(--hint-color);
+        }
+
         .footer {
-            position: absolute;
-            bottom: 20px;
+            text-align: center;
             font-size: 12px;
-            color: var(--tg-theme-hint-color, #707579);
+            color: var(--hint-color);
+            margin-top: 8px;
         }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>SocialUkrBoost</h2>
-        <p>Платформа для просування та підтримки українських спільнот і контенту.</p>
-        
-        <div class="balance">Баланс: <span id="userBalance">0.00</span> GRAM</div>
+    <div class="container">
+        <div class="card">
+            <h2>SocialUkrBoost</h2>
+            <p>Переглядайте рекламні матеріали, підтримуйте українські проєкти та заробляйте внутрішні бали.</p>
+            
+            <div class="balance-box">
+                Баланс: <span class="balance-value" id="userBalance">0.00</span> GRAM
+            </div>
 
-        <button class="btn" id="watchAdBtn">Дивитись рекламу</button>
+            <button class="btn" id="watchAdBtn">Дивитись рекламу</button>
+            <div class="status-msg" id="statusMsg"></div>
+        </div>
+
+        <div class="footer">@socialukrboost_bot</div>
     </div>
 
-    <div class="footer">@socialukrboost_bot</div>
-
     <script>
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
+        // Ініціалізація Telegram WebApp API
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
 
-        // Ініціалізація Adsgram SDK (замініть YOUR_BLOCK_ID на реальний ID рекламного блоку)
-        const adController = window.Adsgram ? window.Adsgram.init({ blockId: "45586" }) : null;
+        let userBalance = 0.0;
+        const balanceSpan = document.getElementById('userBalance');
+        const watchBtn = document.getElementById('watchAdBtn');
+        const statusMsg = document.getElementById('statusMsg');
 
-        document.getElementById('watchAdBtn').addEventListener('click', async () => {
-            const watchBtn = document.getElementById('watchAdBtn');
+        // Ініціалізація контролера Adsgram (blockId: 45586)
+        // Використовуємо коректну перевірку наявності SDK
+        let adController = null;
+        if (window.Adsgram) {
+            adController = window.Adsgram.init({ blockId: "45586" });
+        } else {
+            statusMsg.innerText = "Рекламна мережа завантажується...";
+        }
+
+        watchBtn.addEventListener('click', async () => {
+            if (!adController) {
+                statusMsg.innerText = "Реклама тимчасово недоступна. Спробуйте пізніше.";
+                return;
+            }
+
             watchBtn.disabled = true;
-            watchBtn.innerText = "Завантаження реклами...";
+            watchBtn.innerText = "Завантаження...";
+            statusMsg.innerText = "";
 
-            if (adController) {
-                try {
-                    // Запуск показу реальної реклами
-                    await adController.show();
-                    sendRewardToBot();
-                } catch (e) {
-                    console.log("Показ реклами скасовано або сервер недоступний:", e);
-                    // Якщо реклама не завантажилась через модерацію — на час тестів можна залишити симуляцію
-                    alert("Режим симуляції: перегляд зараховано!");
-                    sendRewardToBot();
-                }
-            } else {
-                // Запасний варіант симуляції
-                setTimeout(() => {
-                    alert("Перегляд зараховано!");
-                    sendRewardToBot();
-                }, 1000);
+            try {
+                // Виклик реального показу реклами Adsgram
+                await adController.show();
+                
+                // Успішний перегляд (користувач додивився рекламу до кінця)
+                onAdWatchedSuccessfully();
+            } catch (err) {
+                // Помилка або користувач закрив рекламу до завершення
+                console.warn("Рекламу не було переглянуто до кінця або сталася помилка:", err);
+                statusMsg.innerText = "Перегляд було скасовано або перервано.";
+                resetButton();
             }
         });
 
-        function sendRewardToBot() {
-            const watchBtn = document.getElementById('watchAdBtn');
-            watchBtn.disabled = false;
-            watchBtn.innerText = "Дивитись рекламу";
+        function onAdWatchedSuccessfully() {
+            // Нарахування винагороди
+            userBalance += 0.01;
+            balanceSpan.innerText = userBalance.toFixed(2);
+            statusMsg.innerText = "Дякуємо! Нараховано +0.01 GRAM.";
             
+            resetButton();
+
+            // Відправляємо дані у ваш Telegram-бот
             const payload = JSON.stringify({
                 event: "ad_watched",
-                reward: 0.01
+                reward: 0.01,
+                timestamp: Date.now()
             });
 
-            if (window.Telegram.WebApp.sendData) {
-                window.Telegram.WebApp.sendData(payload);
+            if (tg.sendData) {
+                tg.sendData(payload);
             }
+        }
+
+        function resetButton() {
+            watchBtn.disabled = false;
+            watchBtn.innerText = "Дивитись рекламу";
         }
     </script>
 </body>
