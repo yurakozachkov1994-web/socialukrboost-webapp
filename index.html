@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SocialUkrBoost App</title>
+    <!-- Telegram Web App Script -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Adsgram SDK Script -->
+    <script src="https://sad.adsgram.ai/js/adsgram.min.js"></script>
     <style>
         :root {
             --bg-color: var(--tg-theme-bg-color, #121619);
@@ -92,7 +95,7 @@
             gap: 6px;
         }
 
-        /* Інтерактивний блок монетизації */
+        /* Інтерактивний блок монетизації (Adsgram) */
         .monetization-card {
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             border-radius: 14px;
@@ -291,7 +294,7 @@
     <!-- Вкладка: Головна / Заробіток -->
     <div id="tab-earn" class="tab-content active">
         
-        <!-- Інтерактивний блок монетизації -->
+        <!-- Інтерактивний блок монетизації (Adsgram) -->
         <div class="monetization-card">
             <h4>📺 Перегляд реклами (Бонус)</h4>
             <p>Дивіться партнерські матеріали, підтримуйте проєкт та миттєво отримуйте бонуси на свій рахунок.</p>
@@ -377,6 +380,9 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
+        // Ініціалізація Adsgram SDK з вашим блоком ID: 45686
+        const adController = window.Adsgram.init({ blockId: "45686" });
+
         // Імітація або отримання даних користувача та його балансів
         let userState = {
             id: tg.initDataUnsafe?.user?.id || 554706846,
@@ -405,11 +411,11 @@
             if (element) element.classList.add('active');
         }
 
-        // РЕАКЦІЯ НА МОНЕТИЗАЦІЮ БЛОКУ: Динамічне оновлення інтерфейсу та зв'язок з ботом
+        // РЕАКЦІЯ НА МОНЕТИЗАЦІЮ БЛОКУ (Adsgram SDK інтеграція)
         function watchAd() {
-            tg.showConfirm("Переглянути рекламний матеріал та отримати +0.05 GRAM на баланс виводу?", (confirmed) => {
-                if (confirmed) {
-                    // Збільшуємо баланс прямо в інтерфейсі (миттєва реакція)
+            adController.show()
+                .then((result) => {
+                    // Користувач успішно додивився рекламу до кінця
                     userState.mainBalance += 0.05;
                     updateUI();
 
@@ -417,9 +423,13 @@
                     const payload = JSON.stringify({ event: "watch_ad", reward: 0.05, user_id: userState.id });
                     tg.sendData(payload);
 
-                    tg.showAlert("🎉 Вітаємо! Рекламу зараховано, +0.05 GRAM додано на ваш баланс виводу.");
-                }
-            });
+                    tg.showAlert("🎉 Вітаємо! Рекламу переглянуто, +0.05 GRAM додано на ваш баланс виводу.");
+                })
+                .catch((result) => {
+                    // Користувач закрив рекламу раніше часу або виникла помилка
+                    console.log("Ad cancelled or error:", result);
+                    tg.showAlert("⚠️ Рекламу не було завершено до кінця, нагорода не нараховується.");
+                });
         }
 
         // Рендер завдань
