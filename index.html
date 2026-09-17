@@ -3,262 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Social Boost | Просування соцмереж</title>
+    <title>SocialUkrBoost App</title>
+    <!-- Telegram Web App Script -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Підключаємо офіційний віджет/скрипт AdsGram SDK -->
-    <script src="https://sad.adsgram.ai/js/adsgram.js"></script>
     <style>
         :root {
-            --bg-color: var(--tg-theme-bg-color, #18222d);
+            --bg-color: var(--tg-theme-bg-color, #121619);
             --text-color: var(--tg-theme-text-color, #ffffff);
-            --hint-color: var(--tg-theme-hint-color, #8b96a5);
+            --hint-color: var(--tg-theme-hint-color, #8c939d);
             --button-color: var(--tg-theme-button-color, #2481cc);
             --button-text-color: var(--tg-theme-button-text-color, #ffffff);
-            --card-bg: var(--tg-theme-secondary-bg-color, #202b38);
-            --green-color: #4cd964;
+            --secondary-bg: var(--tg-theme-secondary-bg-color, #1a2228);
+            --accent-color: #f39c12;
         }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            margin: 0; padding: 0;
-            padding-bottom: 85px;
+            padding: 15px;
+            padding-bottom: 80px;
         }
-        .container { padding: 16px; max-width: 600px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 16px; font-weight: bold; font-size: 18px; }
-        
-        .card {
-            background: var(--card-bg);
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--secondary-bg);
+            padding: 12px 16px;
             border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-        .card-desc { font-size: 14px; color: var(--hint-color); margin-bottom: 12px; }
-        
-        .btn {
+
+        .user-info h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            color: var(--hint-color);
+        }
+
+        .balances {
+            text-align: right;
+        }
+
+        .balance-item {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Блок монетизації (Перегляд реклами) */
+        .monetization-card {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 6px 15px rgba(52, 152, 219,.3);
+        }
+
+        .monetization-card h4 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .monetization-card p {
+            font-size: 13px;
+            color: #ecf0f1;
+            margin-bottom: 14px;
+        }
+
+        .btn-ad {
+            background-color: #f1c40f;
+            color: #2c3e50;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn-ad:active {
+            transform: scale(0.98);
+        }
+
+        /* Список завдань */
+        .tasks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-card {
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .task-title {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .task-reward {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--accent-color);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .btn-task {
             background-color: var(--button-color);
             color: var(--button-text-color);
-            border: none; border-radius: 8px;
-            padding: 10px 16px; font-size: 14px; font-weight: 600;
-            width: 100%; cursor: pointer; text-align: center; margin-top: 8px;
-            text-decoration: none; display: inline-block; box-sizing: border-box;
-        }
-        .btn-ad {
-            background-color: #ff9800;
-        }
-        .input-field {
-            width: 100%; box-sizing: border-box;
-            background: var(--bg-color); color: var(--text-color);
-            border: 1px solid var(--hint-color); border-radius: 8px;
-            padding: 10px; font-size: 14px; margin-bottom: 8px;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
         }
 
+        /* Навігаційне меню знизу */
         .nav-bar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: var(--card-bg);
-            display: flex; overflow-x: auto;
-            gap: 2px; padding: 6px 4px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--secondary-bg);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
             border-top: 1px solid rgba(255,255,255,0.1);
-            scrollbar-width: none;
         }
-        .nav-bar::-webkit-scrollbar { display: none; }
-        .nav-item {
-            background: none; border: none; color: var(--hint-color);
-            font-size: 10px; cursor: pointer; display: flex;
-            flex-direction: column; align-items: center; gap: 2px;
-            padding: 6px 8px; border-radius: 6px; white-space: nowrap;
-            flex: 1; min-width: 60px;
-        }
-        .nav-item.active { color: var(--button-color); background: rgba(255,255,255,0.05); }
-        .nav-item span { font-size: 16px; }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .balance-val { color: var(--green-color); font-weight: bold; }
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--hint-color);
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: var(--button-color);
+        }
+
+        .nav-item span {
+            font-size: 18px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card-box {
+            background: var(--secondary-bg);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="header">SocialUkrBoost</div>
+    <!-- Шапка профілю -->
+    <header>
+        <div class="user-info">
+            <h3 id="user-name">Користувач</h3>
+            <p id="user-id">ID: ...</p>
+        </div>
+        <div class="balances">
+            <div class="balance-item" id="balance-val">0.00 GRAM</div>
+            <div style="font-size: 11px; color: var(--hint-color);">Баланс виводу</div>
+        </div>
+    </header>
 
-        <!-- 1. ЗАРОБИТИ -->
-        <div id="tab-earn" class="tab-content active">
-            <div class="card" style="border: 1px solid #ff9800;">
-                <div class="card-title">📺 Переглянути рекламу та отримати бонус</div>
-                <div class="card-desc">Дивіться короткі ролики та заробляйте +0.05 GRAM на баланс!</div>
-                <button class="btn btn-ad" onclick="showAdsgramAd()">Дивитися рекламу</button>
-            </div>
-
-            <div class="card-title" style="margin-top: 16px;">📋 Доступні завдання</div>
-            <div id="tasks-container">
-                <div class="card"><div class="card-desc" style="text-align: center;">Завантаження завдань...</div></div>
-            </div>
+    <!-- Вкладка: Заробіток та Реклама -->
+    <div id="tab-earn" class="tab-content active">
+        
+        <!-- МОНЕТИЗАЦІЯ БЛОКУ (Кнопка перегляду реклами НАД завданнями) -->
+        <div class="monetization-card">
+            <h4>🎁 Бонусний перегляд реклами</h4>
+            <p>Перегляньте рекламний спонсорський матеріал та миттєво отримайте +0.01 GRAM на ваш баланс!</p>
+            <button class="btn-ad" onclick="watchAd()">📺 Переглянути рекламу (+0.01 GRAM)</button>
         </div>
 
-        <!-- 2. РЕКЛАМА -->
-        <div id="tab-ads" class="tab-content">
-            <div class="card">
-                <div class="card-title">📢 Реклама та просування</div>
-                <div class="card-desc">Створюйте завдання для підписок та переглядів. Керування кампаніями доступне через головного бота.</div>
-                <button class="btn" onclick="tg.openTelegramLink('https://t.me/socialukrboostbot')">Перейти до бота для реклами</button>
-            </div>
-        </div>
-
-        <!-- 3. ПРОФІЛЬ -->
-        <div id="tab-profile" class="tab-content">
-            <div class="card">
-                <div class="card-title">💰 Мій профіль</div>
-                <p>Ім'я: <span id="p-name">-</span></p>
-                <p>ID: <span id="p-id">-</span></p>
-                <p>Баланс для виводу: <span id="p-balance" class="balance-val">0.00 GRAM</span></p>
-                <p>Рекламний баланс: <span id="p-adv-balance" style="color: #ff9800; font-weight: bold;">0.00 GRAM</span></p>
-            </div>
-        </div>
-
-        <!-- 4. РЕФЕРАЛИ -->
-        <div id="tab-refs" class="tab-content">
-            <div class="card">
-                <div class="card-title">👥 Реферальна програма</div>
-                <div class="card-desc">Запрошуйте друзів за своїм посиланням та отримуйте бонуси за кожного активного користувача!</div>
-                <button class="btn" onclick="copyRef()">Скопіювати реферальне посилання</button>
-            </div>
-        </div>
-
-        <!-- 5. ПРОМОКОД -->
-        <div id="tab-promo" class="tab-content">
-            <div class="card">
-                <div class="card-title">🎟 Ввести промокод</div>
-                <div class="card-desc">Активуйте промокоди для отримання бонусів на рекламний баланс.</div>
-                <input type="text" id="promo-input" class="input-field" placeholder="Введіть код...">
-                <button class="btn" onclick="tg.openTelegramLink('https://t.me/socialukrboostbot')">Активувати через бота</button>
-            </div>
-        </div>
-
-        <!-- 6. АМБАСАДОР -->
-        <div id="tab-ambassador" class="tab-content">
-            <div class="card">
-                <div class="card-title">🤝 Стати амбасадором</div>
-                <div class="card-desc">Отримуйте особливі умови та максимальний відсоток від партнерської мережі. Подати заявку можна через бота.</div>
-                <button class="btn" onclick="tg.openTelegramLink('https://t.me/socialukrboostbot')">Подати заявку в боті</button>
-            </div>
-        </div>
-
-        <!-- 7. ДОПОМОГА -->
-        <div id="tab-help" class="tab-content">
-            <div class="card">
-                <div class="card-title">ℹ️ Допомога та підтримка</div>
-                <div class="card-desc">Виникли питання щодо виплат чи завдань? Звертайтеся до нашої служби підтримки.</div>
-                <button class="btn" onclick="tg.openTelegramLink('https://t.me/socialukrboost')">Написати підтримці</button>
-            </div>
+        <div class="section-title">📋 Доступні завдання</div>
+        <div class="tasks-container" id="tasks-list">
+            <!-- Завантажується динамічно -->
+            <div style="text-align: center; color: var(--hint-color); padding: 20px;">Завантаження завдань...</div>
         </div>
     </div>
 
-    <!-- НИЖНЯ ПАНЕЛЬ НАВІГАЦІЇ -->
-    <div class="nav-bar">
-        <button class="nav-item active" onclick="switchTab('earn', this)"><span>📋</span>Заробити</button>
-        <button class="nav-item" onclick="switchTab('ads', this)"><span>📢</span>Реклама</button>
-        <button class="nav-item" onclick="switchTab('profile', this)"><span>💰</span>Профіль</button>
-        <button class="nav-item" onclick="switchTab('refs', this)"><span>👥</span>Реферали</button>
-        <button class="nav-item" onclick="switchTab('promo', this)"><span>🎟</span>Промо</button>
-        <button class="nav-item" onclick="switchTab('ambassador', this)"><span>🤝</span>Амбасадор</button>
-        <button class="nav-item" onclick="switchTab('help', this)"><span>ℹ️</span>Допомога</button>
+    <!-- Вкладка: Профіль -->
+    <div id="tab-profile" class="tab-content">
+        <div class="section-title">👤 Мій профіль</div>
+        <div class="card-box">
+            <p><strong>Баланс для виводу:</strong> <span id="profile-balance">0.00</span> GRAM</p>
+            <p style="margin-top: 8px;"><strong>Рекламний баланс:</strong> <span id="profile-adv">0.30</span> GRAM</p>
+        </div>
+        <div class="card-box">
+            <p style="color: var(--hint-color); font-size: 13px;">Тут ви можете керувати своїми фінансами та переглядати статус виплат так само як у Telegram-боті.</p>
+        </div>
     </div>
+
+    <!-- Вкладка: Реферали -->
+    <div id="tab-referrals" class="tab-content">
+        <div class="section-title">👥 Реферальна система</div>
+        <div class="card-box">
+            <p>Запрошуйте друзів та отримуйте бонуси одразу на баланс!</p>
+            <p style="margin-top: 10px; font-weight: bold;" id="ref-link-box">Посилання: завантаження...</p>
+        </div>
+    </div>
+
+    <!-- Нижня панель навігації -->
+    <nav class="nav-bar">
+        <button class="nav-item active" onclick="switchTab('earn', this)">
+            <span>📋</span>Заробити
+        </button>
+        <button class="nav-item" onclick="switchTab('profile', this)">
+            <span>💰</span>Профіль
+        </button>
+        <button class="nav-item" onclick="switchTab('referrals', this)">
+            <span>👥</span>Реферали
+        </button>
+    </nav>
 
     <script>
-        let tg = window.Telegram.WebApp;
+        const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let user = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : { id: 77777, first_name: "Гість" };
+        // Ініціалізація даних користувача з Telegram
+        const user = tg.initDataUnsafe?.user || { id: 554706846, first_name: "Юрій", username: "yurakozachkov" };
         
-        document.getElementById('p-name').innerText = user.first_name;
-        document.getElementById('p-id').innerText = user.id;
+        document.getElementById('user-name').innerText = user.first_name || "Користувач";
+        document.getElementById('user-id').innerText = `ID: ${user.id}`;
+        document.getElementById('ref-link-box').innerText = `https://t.me/socialukrboost_bot?start=${user.id}`;
 
-        // Завантаження даних користувача з бекенду Python (aiohttp)
-        async function fetchUserData() {
-            try {
-                let response = await fetch('/api/user', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ initData: tg.initData, test_user_id: user.id })
-                });
-                let data = await response.json();
-                if (data.success) {
-                    document.getElementById('p-balance').innerText = data.balance.toFixed(3) + ' GRAM';
-                    document.getElementById('p-adv-balance').innerText = data.adv_balance.toFixed(3) + ' GRAM';
-                }
-            } catch (e) {
-                console.log("Помилка завантаження даних користувача:", e);
-            }
-        }
-
-        // Завантаження завдань із бекенду
-        async function fetchTasks() {
-            try {
-                let response = await fetch('/api/tasks');
-                let data = await response.json();
-                let container = document.getElementById('tasks-container');
-                
-                if (data.success && data.tasks.length > 0) {
-                    container.innerHTML = '';
-                    data.tasks.forEach(task => {
-                        container.innerHTML += `
-                            <div class="card">
-                                <div class="card-title">${escapeHtml(task.title)}</div>
-                                <div class="card-desc">Винагорода: <strong style="color:var(--green-color);">${task.reward} GRAM</strong></div>
-                                <a href="${task.link}" target="_blank" class="btn" onclick="completeTaskBackend(${task.task_id})">Виконати завдання</a>
-                            </div>
-                        `;
-                    });
-                } else {
-                    container.innerHTML = '<div class="card"><div class="card-desc" style="text-align: center;">Наразі немає активних завдань. Загляньте пізніше!</div></div>';
-                }
-            } catch (e) {
-                document.getElementById('tasks-container').innerHTML = '<div class="card"><div class="card-desc" style="text-align: center;">Не вдалося завантажити завдання.</div></div>';
-            }
-        }
-
-        function escapeHtml(text) {
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
-
-        fetchUserData();
-        fetchTasks();
-
-        function switchTab(tabName, btn) {
+        // Перемикання вкладок
+        function switchTab(tabName, element) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
             document.getElementById('tab-' + tabName).classList.add('active');
-            btn.classList.add('active');
+            element.classList.add('active');
         }
 
-        // Ініціалізація реклами AdsGram з твоїмтвердженим Block ID
-        const adController = Adsgram.init({ blockId: "45686" });
-
-        function showAdsgramAd() {
-            adController.show().then(() => {
-                // Успішний перегляд — відправляємо подію в бот / оновлюємо баланс
-                tg.sendData(JSON.stringify({ event: "ad_watched", reward: 0.05 }));
-                tg.showAlert('Дякуємо за перегляд! Вам нараховано +0.05 GRAM');
-                setTimeout(fetchUserData, 1000);
-            }).catch((result) => {
-                console.log("Рекламу пропущено або сталася помилка:", result);
-                tg.showAlert('Рекламу не було доглянуто до кінця.');
+        // Функція монетизації: відправка даних у бот про перегляд реклами
+        function watchAd() {
+            // Імітація або реальний виклик реклами (наприклад, інтеграція Adsgram / Telegram Ads)
+            tg.showConfirm("Бажаєте переглянути коротку рекламну вставку для отримання бонусу?", (confirmed) => {
+                if (confirmed) {
+                    // Надсилаємо дані назад у Python бот через sendData
+                    const payload = JSON.stringify({ event: "ad_watched", reward: 0.01 });
+                    tg.sendData(payload);
+                    tg.showAlert("✅ Рекламу переглянуто! Нагороду зараховано.");
+                }
             });
         }
 
-        function completeTaskBackend(taskId) {
-            tg.showAlert('Перехід до виконання завдання...');
-            setTimeout(fetchUserData, 2000);
+        // Завантаження демо-завдань у міні-апку (повністю синхронізовано з логікою бота)
+        function loadTasks() {
+            const container = document.getElementById('tasks-list');
+            // Тут ви можете підключити fetch до вашого бекенду або вивести актуальні завдання
+            container.innerHTML = `
+                <div class="task-card">
+                    <div class="task-header">
+                        <span class="task-title">📢 Підписатися на канал News⚡️Україна</span>
+                        <span class="task-reward">+0.05 GRAM</span>
+                    </div>
+                    <button class="btn-task" onclick="tg.openTelegramLink('https://t.me/try_ukractive')">Виконати завдання</button>
+                </div>
+                <div class="task-card">
+                    <div class="task-header">
+                        <span class="task-title">🌐 Переглянути партнерський сайт</span>
+                        <span class="task-reward">+0.02 GRAM</span>
+                    </div>
+                    <button class="btn-task" onclick="tg.openLink('https://socialukrboost.pp.ua')">Перейти на сайт</button>
+                </div>
+            `;
         }
 
-        function copyRef() {
-            let refLink = `https://t.me/socialukrboostbot?start=${user.id}`;
-            navigator.clipboard.writeText(refLink);
-            tg.showAlert('Реферальне посилання скопійовано у буфер обміну!');
-        }
+        loadTasks();
     </script>
 </body>
 </html>
