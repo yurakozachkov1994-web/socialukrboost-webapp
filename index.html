@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SocialUkrBoost App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Підключення Adsgram SDK -->
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <style>
         :root {
@@ -52,9 +51,7 @@
             text-align: center;
         }
         .btn:active { opacity: 0.8; }
-        .btn-success {
-            background-color: #27ae60;
-        }
+        .btn-success { background-color: #27ae60; }
         .task-item {
             background: var(--tg-theme-bg-color, #fff);
             border-radius: 8px;
@@ -62,17 +59,8 @@
             margin-bottom: 8px;
             border: 1px solid var(--tg-theme-secondary-bg-color, #ddd);
         }
-        .task-title {
-            font-weight: bold;
-            font-size: 15px;
-            margin-bottom: 4px;
-        }
-        .task-reward {
-            color: #27ae60;
-            font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
+        .task-title { font-weight: bold; font-size: 15px; margin-bottom: 4px; }
+        .task-reward { color: #27ae60; font-weight: bold; font-size: 14px; margin-bottom: 8px; }
         .nav-bar {
             position: fixed;
             bottom: 0;
@@ -92,24 +80,16 @@
             cursor: pointer;
             flex: 1;
         }
-        .nav-item.active {
-            color: var(--tg-theme-link-color, #2481cc);
-            font-weight: bold;
-        }
+        .nav-item.active { color: var(--tg-theme-link-color, #2481cc); font-weight: bold; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .balance-box {
-            font-size: 20px;
-            font-weight: bold;
-            color: #2481cc;
-            margin: 8px 0;
-        }
+        .balance-box { font-size: 20px; font-weight: bold; color: #2481cc; margin: 8px 0; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- Вкладка: Головна / Заробити -->
+    <!-- Вкладка: Заробіток -->
     <div id="tab-earn" class="tab-content active">
         <h2>📋 Заробіток та завдання</h2>
         
@@ -120,10 +100,10 @@
         </div>
 
         <div class="card">
-            <h3>Активні завдання з бази</h3>
+            <h3>Активні завдання</h3>
             <p>Виконуйте завдання та отримуйте нагороди:</p>
             <div id="tasks-container">
-                <p style="text-align: center; color: var(--tg-theme-hint-color);">Завантаження завдань...</p>
+                <!-- Сюди автоматично завантажуються завдання з масиву нижче -->
             </div>
         </div>
     </div>
@@ -133,7 +113,7 @@
         <h2>📢 Реклама та просування</h2>
         <div class="card">
             <h3>Створити кампанію</h3>
-            <p>Просувайте свої канали, боти або сайти серед користувачів мережі.</p>
+            <p>Просувайте свої канали або боти серед користувачів.</p>
             <button class="btn" onclick="openTelegramBot()">➕ Створити через бота</button>
         </div>
     </div>
@@ -147,7 +127,7 @@
             <div class="balance-box"><span id="user-balance">0.00</span> GRAM</div>
             <p>Рекламний баланс:</p>
             <div class="balance-box" style="color: #e67e22;"><span id="user-adv-balance">0.00</span> GRAM</div>
-            <button class="btn" onclick="openTelegramBot()">💳 Поповнити / Вивести</button>
+            <button class="btn" onclick="openTelegramBot()">💳 Керувати через бота</button>
         </div>
     </div>
 
@@ -155,7 +135,7 @@
     <div id="tab-refs" class="tab-content">
         <h2>👥 Реферальна система</h2>
         <div class="card">
-            <p>Запрошуйте друзів та отримуйте винагороди за їхню активність!</p>
+            <p>Запрошуйте друзів та отримуйте винагороди!</p>
             <button class="btn" onclick="shareRefLink()">🔗 Поділитися посиланням</button>
         </div>
     </div>
@@ -176,97 +156,93 @@
     const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "45686" }) : null;
 
     let currentUser = {
-        id: tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 0,
-        username: tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.username : "unknown"
+        id: tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 12345,
+        username: tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.username : "user"
     };
 
-    if (currentUser.id) {
-        document.getElementById('user-id').innerText = currentUser.id;
-        loadUserData();
-        loadTasks();
+    // Отримуємо або створюємо локальний баланс у пам'яті браузера (LocalStorage)
+    let userBalance = parseFloat(localStorage.getItem('user_balance') || '0.00');
+    let userAdvBalance = parseFloat(localStorage.getItem('user_adv_balance') || '0.00');
+
+    // СПИСОК ВАШИХ ЗАВДАНЬ (можете змінювати або додавати свої з бази даних сюди)
+    let tasks = [
+        { id: 1, title: "Підписатися на канал Трудівник", reward: 0.05, link: "https://t.me/telegram" },
+        { id: 2, title: "Переглянути пост у соцмережах", reward: 0.03, link: "https://t.me/telegram" },
+        { id: 3, title: "Підписатися на партнерський бот", reward: 0.10, link: "https://t.me/telegram" }
+    ];
+
+    // Завантаження при старті
+    document.getElementById('user-id').innerText = currentUser.id;
+    updateUI();
+    renderTasks();
+
+    function updateUI() {
+        document.getElementById('user-balance').innerText = userBalance.toFixed(2);
+        document.getElementById('user-adv-balance').innerText = userAdvBalance.toFixed(2);
     }
 
     function switchTab(tabName, element) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        
         document.getElementById('tab-' + tabName).classList.add('active');
         element.classList.add('active');
     }
 
-    // Завантаження балансу користувача з бази даних через бота
-    function loadUserData() {
-        fetch(`https://YOUR_BACKEND_URL/api/get_user?user_id=${currentUser.id}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('user-balance').innerText = data.balance.toFixed(2);
-                    document.getElementById('user-adv-balance').innerText = data.adv_balance.toFixed(2);
-                }
-            })
-            .catch(err => console.log("Помилка завантаження профілю:", err));
-    }
-
-    // Завантаження завдань із бази даних
-    function loadTasks() {
-        fetch(`https://YOUR_BACKEND_URL/api/get_tasks?user_id=${currentUser.id}`)
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById('tasks-container');
-                container.innerHTML = '';
-                
-                if (!data.tasks || data.tasks.length === 0) {
-                    container.innerHTML = '<p style="text-align: center; color: var(--tg-theme-hint-color);">Наразі немає доступних завдань.</p>';
-                    return;
-                }
-
-                data.tasks.forEach(task => {
-                    const taskDiv = document.createElement('div');
-                    taskDiv.className = 'task-item';
-                    taskDiv.innerHTML = `
-                        <div class="task-title">${task.title}</div>
-                        <div class="task-reward">🎁 Нагорода: +${task.reward} GRAM</div>
-                        <button class="btn btn-success" onclick="completeTask(${task.task_id}, '${task.link}')">Виконати завдання</button>
-                    `;
-                    container.appendChild(taskDiv);
-                });
-            })
-            .catch(err => {
-                document.getElementById('tasks-container').innerHTML = '<p style="text-align: center; color: red;">Помилка завантаження завдань</p>';
-            });
-    }
-
-    function completeTask(taskId, link) {
-        window.open(link, '_blank');
+    function renderTasks() {
+        const container = document.getElementById('tasks-container');
+        container.innerHTML = '';
         
-        // Відправляємо запит на сервер для зарахування нагороди
-        fetch('https://YOUR_BACKEND_URL/api/complete_task', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: currentUser.id, task_id: taskId })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                tg.showAlert(`✅ Завдання зараховано! Нараховано +${data.reward} GRAM.`);
-                loadUserData();
-                loadTasks();
-            } else {
-                tg.showAlert(`⚠️ ${data.message || 'Помилка виконання'}`);
-            }
+        // Перевіряємо виконані завдання з пам'яті
+        let completedTasks = JSON.parse(localStorage.getItem('completed_tasks') || '[]');
+
+        let activeTasks = tasks.filter(t => !completedTasks.includes(t.id));
+
+        if (activeTasks.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: var(--tg-theme-hint-color);">Наразі немає доступних завдань.</p>';
+            return;
+        }
+
+        activeTasks.forEach(task => {
+            const taskDiv = document.createElement('div');
+            taskDiv.className = 'task-item';
+            taskDiv.innerHTML = `
+                <div class="task-title">${task.title}</div>
+                <div class="task-reward">🎁 Нагорода: +${task.reward} GRAM</div>
+                <button class="btn btn-success" onclick="completeTask(${task.id}, '${task.link}', ${task.reward})">Виконати завдання</button>
+            `;
+            container.appendChild(taskDiv);
         });
+    }
+
+    function completeTask(taskId, link, reward) {
+        window.open(link, '_blank');
+
+        // Зберігаємо виконання в LocalStorage
+        let completedTasks = JSON.parse(localStorage.getItem('completed_tasks') || '[]');
+        if (!completedTasks.includes(taskId)) {
+            completedTasks.push(taskId);
+            localStorage.setItem('completed_tasks', JSON.stringify(completedTasks));
+        }
+
+        // Нараховуємо баланс
+        userBalance += reward;
+        localStorage.setItem('user_balance', userBalance);
+
+        tg.showAlert(`✅ Завдання зараховано! Нараховано +${reward} GRAM.`);
+        updateUI();
+        renderTasks();
     }
 
     function watchAdsgramAd() {
         if (!AdController) {
-            alert("Adsgram SDK недоступний.");
+            alert("Adsgram SDK недоступний у цьому середовищі.");
             return;
         }
-        
         AdController.show().then((result) => {
-            tg.sendData(JSON.stringify({ event: "ad_watched", reward: 0.01 }));
+            userBalance += 0.01;
+            localStorage.setItem('user_balance', userBalance);
             tg.showAlert("✅ Дякуємо за перегляд! Нараховано +0.01 GRAM.");
-            loadUserData();
+            updateUI();
         }).catch((result) => {
             tg.showAlert("⚠️ Рекламу не було завершено.");
         });
@@ -281,7 +257,7 @@
         const refUrl = `https://t.me/${botUsername}?start=${currentUser.id}`;
         if (navigator.clipboard) {
             navigator.clipboard.writeText(refUrl).then(() => {
-                tg.showAlert("✅ Реферальне посилання скопійовано в буфер обміну!");
+                tg.showAlert("✅ Реферальне посилання скопійовано!");
             });
         }
     }
