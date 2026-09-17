@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Social Boost | Просування соцмереж</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Підключаємо офіційний віджет/скрипт AdsGram SDK -->
+    <script src="https://sad.adsgram.ai/js/adsgram.js"></script>
     <style>
         :root {
             --bg-color: var(--tg-theme-bg-color, #18222d);
@@ -41,6 +43,9 @@
             padding: 10px 16px; font-size: 14px; font-weight: 600;
             width: 100%; cursor: pointer; text-align: center; margin-top: 8px;
         }
+        .btn-ad {
+            background-color: #ff9800; /* Яскравий колір для заробітку на рекламі */
+        }
         .input-field {
             width: 100%; box-sizing: border-box;
             background: var(--bg-color); color: var(--text-color);
@@ -73,17 +78,18 @@
     <div class="container">
         <div class="header">Social Boost</div>
 
-        <!-- 1. ЗАРОБИТИ -->
+        <!-- 1. ЗАРОБИТИ (Тут додаємо кнопку перегляду реклами за винагороду) -->
         <div id="tab-earn" class="tab-content active">
+            <div class="card" style="border: 1px solid #ff9800;">
+                <div class="card-title">📺 Переглянути рекламу та отримати бонус</div>
+                <div class="card-desc">Дивіться короткі ролки та заробляйте +0.05 GRAM на баланс!</div>
+                <button class="btn btn-ad" onclick="showAdsgramAd()">Дивитися рекламу</button>
+            </div>
+
             <div class="card">
                 <div class="card-title">💡 Підписка на тікток</div>
                 <div class="card-desc">Винагорода: 0.04 GRAM</div>
                 <button class="btn" onclick="completeTask(0.04, this)">Перейти та виконати</button>
-            </div>
-            <div class="card">
-                <div class="card-title">💡 Перегляд поста у Telegram</div>
-                <div class="card-desc">Винагорода: 0.02 GRAM</div>
-                <button class="btn" onclick="completeTask(0.02, this)">Перейти та виконати</button>
             </div>
         </div>
 
@@ -158,13 +164,11 @@
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Отримуємо дані користувача з Telegram
         let user = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : { id: 77777, first_name: "Гість" };
         
         document.getElementById('p-name').innerText = user.first_name;
         document.getElementById('p-id').innerText = user.id;
 
-        // Працюємо з локальною пам'яттю браузера для балансу
         let storageKey = 'user_balance_' + user.id;
         let balance = parseFloat(localStorage.getItem(storageKey)) || 0.04;
 
@@ -174,7 +178,6 @@
         }
         updateBalanceUI();
 
-        // Перемикання вкладок
         function switchTab(tabName, btn) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -182,7 +185,23 @@
             btn.classList.add('active');
         }
 
-        // Виконання завдання
+        // Ініціалізація показу реклами AdsGram
+        // ЗАМІНІТЬ 'int-xxx' на ваш реальний Block ID з кабінету AdsGram!
+        const adController = Adsgram.init({ blockId: "int-xxx" });
+
+        function showAdsgramAd() {
+            adController.show().then(() => {
+                // Реклама успішно переглянута до кінця — нараховуємо бонус
+                balance += 0.05;
+                updateBalanceUI();
+                tg.showAlert('Дякуємо за перегляд! Вам нараховано +0.05 GRAM');
+            }).catch((result) => {
+                // Користувач закрив рекламу раніше або сталася помилка
+                console.log("Помилка або рекламу пропущено:", result);
+                tg.showAlert('Рекламу не було доглянуто до кінця.');
+            });
+        }
+
         function completeTask(reward, btnElement) {
             balance += reward;
             updateBalanceUI();
@@ -192,14 +211,12 @@
             btnElement.disabled = true;
         }
 
-        // Реферальне посилання
         function copyRef() {
             let refLink = `https://t.me/socialukrboostbot/app?start=ref_${user.id}`;
             navigator.clipboard.writeText(refLink);
             tg.showAlert('Реферальне посилання скопійовано!');
         }
 
-        // Активація промокоду
         function applyPromo() {
             let code = document.getElementById('promo-input').value.trim();
             if (!code) {
