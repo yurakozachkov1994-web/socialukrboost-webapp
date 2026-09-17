@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SocialUkrBoost App</title>
-    <!-- Telegram Web App Script -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -15,6 +14,7 @@
             --button-text-color: var(--tg-theme-button-text-color, #ffffff);
             --secondary-bg: var(--tg-theme-secondary-bg-color, #1a2228);
             --accent-color: #f39c12;
+            --success-color: #2ecc71;
         }
 
         * {
@@ -27,80 +27,103 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            padding: 15px;
+            padding: 12px;
             padding-bottom: 80px;
         }
 
+        /* Розширена шапка з усіма балансами (як у боті) */
         header {
+            background: var(--secondary-bg);
+            padding: 14px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .user-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--secondary-bg);
-            padding: 12px 16px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding-bottom: 8px;
         }
 
         .user-info h3 {
-            font-size: 16px;
-            margin-bottom: 4px;
+            font-size: 15px;
         }
 
         .user-info p {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--hint-color);
         }
 
-        .balances {
-            text-align: right;
+        .balances-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
 
-        .balance-item {
+        .balance-box {
+            background: rgba(255,255,255,0.03);
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .balance-title {
+            font-size: 11px;
+            color: var(--hint-color);
+            margin-bottom: 2px;
+        }
+
+        .balance-value {
             font-size: 14px;
             font-weight: bold;
             color: var(--accent-color);
         }
 
         .section-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
-        /* Блок монетизації (Перегляд реклами) */
+        /* Інтерактивний блок монетизації */
         .monetization-card {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
             border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 20px;
+            padding: 14px;
+            margin-bottom: 16px;
             text-align: center;
-            box-shadow: 0 6px 15px rgba(52, 152, 219,.3);
+            box-shadow: 0 6px 15px rgba(42, 82, 152, 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .monetization-card h4 {
-            font-size: 16px;
-            margin-bottom: 8px;
+            font-size: 15px;
+            margin-bottom: 6px;
             color: #fff;
         }
 
         .monetization-card p {
-            font-size: 13px;
-            color: #ecf0f1;
-            margin-bottom: 14px;
+            font-size: 12px;
+            color: #dcdde1;
+            margin-bottom: 12px;
+            line-height: 1.4;
         }
 
         .btn-ad {
-            background-color: #f1c40f;
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
             color: #2c3e50;
             border: none;
             width: 100%;
-            padding: 12px;
+            padding: 11px;
             border-radius: 10px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             transition: 0.2s;
@@ -111,90 +134,7 @@
             transform: scale(0.98);
         }
 
-        /* Список завдань */
-        .tasks-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .task-card {
-            background: var(--secondary-bg);
-            border-radius: 12px;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .task-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .task-title {
-            font-size: 15px;
-            font-weight: 600;
-        }
-
-        .task-reward {
-            background: rgba(243, 156, 18, 0.15);
-            color: var(--accent-color);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-
-        .btn-task {
-            background-color: var(--button-color);
-            color: var(--button-text-color);
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-        }
-
-        /* Навігаційне меню знизу */
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: var(--secondary-bg);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .nav-item {
-            background: none;
-            border: none;
-            color: var(--hint-color);
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-        }
-
-        .nav-item.active {
-            color: var(--button-color);
-        }
-
-        .nav-item span {
-            font-size: 18px;
-        }
-
+        /* Функціональні вкладки / Меню */
         .tab-content {
             display: none;
         }
@@ -205,52 +145,193 @@
 
         .card-box {
             background: var(--secondary-bg);
-            padding: 16px;
+            padding: 14px;
             border-radius: 12px;
             margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .tasks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .task-card {
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .task-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .task-reward {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--accent-color);
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .btn-task {
+            background-color: var(--button-color);
+            color: var(--button-text-color);
+            border: none;
+            padding: 9px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        /* Меню кнопок управління */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .menu-btn {
+            background: var(--secondary-bg);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 12px;
+            border-radius: 12px;
+            color: var(--text-color);
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .menu-btn span {
+            font-size: 20px;
+        }
+
+        /* Нижня панель навігації */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--secondary-bg);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--hint-color);
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: var(--button-color);
+        }
+
+        .nav-item span {
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Шапка профілю -->
+    <!-- Шапка з повними балансами (як у боті) -->
     <header>
-        <div class="user-info">
-            <h3 id="user-name">Користувач</h3>
-            <p id="user-id">ID: ...</p>
+        <div class="user-row">
+            <div class="user-info">
+                <h3 id="user-name">Користувач</h3>
+                <p id="user-id">ID: ...</p>
+            </div>
+            <div style="background: rgba(46,204,113,0.15); color: var(--success-color); padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold;">
+                ● Онлайн
+            </div>
         </div>
-        <div class="balances">
-            <div class="balance-item" id="balance-val">0.00 GRAM</div>
-            <div style="font-size: 11px; color: var(--hint-color);">Баланс виводу</div>
+        <div class="balances-grid">
+            <div class="balance-box">
+                <div class="balance-title">💰 Баланс виводу</div>
+                <div class="balance-value" id="main-balance">0.00 GRAM</div>
+            </div>
+            <div class="balance-box">
+                <div class="balance-title">📢 Рекламний баланс</div>
+                <div class="balance-value" id="adv-balance" style="color: #3498db;">0.00 GRAM</div>
+            </div>
         </div>
     </header>
 
-    <!-- Вкладка: Заробіток та Реклама -->
+    <!-- Вкладка: Головна / Заробіток -->
     <div id="tab-earn" class="tab-content active">
         
-        <!-- МОНЕТИЗАЦІЯ БЛОКУ (Кнопка перегляду реклами НАД завданнями) -->
+        <!-- Інтерактивний блок монетизації -->
         <div class="monetization-card">
-            <h4>🎁 Бонусний перегляд реклами</h4>
-            <p>Перегляньте рекламний спонсорський матеріал та миттєво отримайте +0.01 GRAM на ваш баланс!</p>
-            <button class="btn-ad" onclick="watchAd()">📺 Переглянути рекламу (+0.01 GRAM)</button>
+            <h4>📺 Перегляд реклами (Бонус)</h4>
+            <p>Дивіться партнерські матеріали, підтримуйте проєкт та миттєво отримуйте бонуси на свій рахунок.</p>
+            <button class="btn-ad" onclick="watchAd()">Дивитися рекламу (+0.05 GRAM)</button>
         </div>
 
-        <div class="section-title">📋 Доступні завдання</div>
-        <div class="tasks-container" id="tasks-list">
-            <!-- Завантажується динамічно -->
-            <div style="text-align: center; color: var(--hint-color); padding: 20px;">Завантаження завдань...</div>
+        <!-- Розширене міні-меню швидких дій -->
+        <div class="menu-grid">
+            <button class="menu-btn" onclick="switchTab('tasks', document.querySelectorAll('.nav-item')[1])">
+                <span>📋</span>Завдання
+            </button>
+            <button class="menu-btn" onclick="switchTab('boost', document.querySelectorAll('.nav-item')[2])">
+                <span>🚀</span>Створити кампанію
+            </button>
+            <button class="menu-btn" onclick="switchTab('referrals', document.querySelectorAll('.nav-item')[3])">
+                <span>👥</span>Реферали
+            </button>
+            <button class="menu-btn" onclick="switchTab('wallet', document.querySelectorAll('.nav-item')[4])">
+                <span>💳</span>Гаманець / Вивід
+            </button>
+        </div>
+
+        <div class="section-title">🔥 Швидкий доступ до завдань</div>
+        <div class="tasks-container" id="quick-tasks">
+            <!-- Динамічно заповнюється -->
         </div>
     </div>
 
-    <!-- Вкладка: Профіль -->
-    <div id="tab-profile" class="tab-content">
-        <div class="section-title">👤 Мій профіль</div>
+    <!-- Вкладка: Завдання -->
+    <div id="tab-tasks" class="tab-content">
+        <div class="section-title">📋 Активні завдання</div>
+        <div class="tasks-container" id="full-tasks-list"></div>
+    </div>
+
+    <!-- Вкладка: Реклама / Буст -->
+    <div id="tab-boost" class="tab-content">
+        <div class="section-title">🚀 Розкрутка та реклама</div>
         <div class="card-box">
-            <p><strong>Баланс для виводу:</strong> <span id="profile-balance">0.00</span> GRAM</p>
-            <p style="margin-top: 8px;"><strong>Рекламний баланс:</strong> <span id="profile-adv">0.30</span> GRAM</p>
-        </div>
-        <div class="card-box">
-            <p style="color: var(--hint-color); font-size: 13px;">Тут ви можете керувати своїми фінансами та переглядати статус виплат так само як у Telegram-боті.</p>
+            <p style="font-size: 13px; margin-bottom: 10px;">Створіть завдання для просування вашого каналу чи сайту серед користувачів.</p>
+            <button class="btn-task" onclick="tg.showAlert('Функціонал створення кампанії доступний у боті або оновлюється.')">Створити нове завдання</button>
         </div>
     </div>
 
@@ -258,21 +339,37 @@
     <div id="tab-referrals" class="tab-content">
         <div class="section-title">👥 Реферальна система</div>
         <div class="card-box">
-            <p>Запрошуйте друзів та отримуйте бонуси одразу на баланс!</p>
-            <p style="margin-top: 10px; font-weight: bold;" id="ref-link-box">Посилання: завантаження...</p>
+            <p style="font-size: 13px; margin-bottom: 10px;">Запрошуйте користувачів та отримуйте відсоток від їх активності.</p>
+            <p style="font-weight: bold; font-size: 12px; color: var(--accent-color);" id="ref-link-box">Посилання: завантаження...</p>
         </div>
     </div>
 
-    <!-- Нижня панель навігації -->
+    <!-- Вкладка: Гаманець / Профіль -->
+    <div id="tab-wallet" class="tab-content">
+        <div class="section-title">💳 Керування фінансами</div>
+        <div class="card-box">
+            <p style="margin-bottom: 6px;"><strong>Доступно до виводу:</strong> <span id="wallet-main">0.00</span> GRAM</p>
+            <p style="margin-bottom: 12px;"><strong>Рекламний рахунок:</strong> <span id="wallet-adv">0.00</span> GRAM</p>
+            <button class="btn-task" onclick="tg.showAlert('Запит на вивод коштів надіслано в бот.')">Вивести кошти</button>
+        </div>
+    </div>
+
+    <!-- Нижня панель навігації (5 вкладок для максимального функціоналу) -->
     <nav class="nav-bar">
         <button class="nav-item active" onclick="switchTab('earn', this)">
-            <span>📋</span>Заробити
+            <span>🏠</span>Головна
         </button>
-        <button class="nav-item" onclick="switchTab('profile', this)">
-            <span>💰</span>Профіль
+        <button class="nav-item" onclick="switchTab('tasks', this)">
+            <span>📋</span>Завдання
+        </button>
+        <button class="nav-item" onclick="switchTab('boost', this)">
+            <span>🚀</span>Буст
         </button>
         <button class="nav-item" onclick="switchTab('referrals', this)">
             <span>👥</span>Реферали
+        </button>
+        <button class="nav-item" onclick="switchTab('wallet', this)">
+            <span>💳</span>Гаманець
         </button>
     </nav>
 
@@ -280,12 +377,24 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Ініціалізація даних користувача з Telegram
-        const user = tg.initDataUnsafe?.user || { id: 554706846, first_name: "Юрій", username: "yurakozachkov" };
-        
-        document.getElementById('user-name').innerText = user.first_name || "Користувач";
-        document.getElementById('user-id').innerText = `ID: ${user.id}`;
-        document.getElementById('ref-link-box').innerText = `https://t.me/socialukrboost_bot?start=${user.id}`;
+        // Імітація або отримання даних користувача та його балансів
+        let userState = {
+            id: tg.initDataUnsafe?.user?.id || 554706846,
+            name: tg.initDataUnsafe?.user?.first_name || "Юрій",
+            mainBalance: 1.25, // Баланс виводу як у боті
+            advBalance: 0.30   // Рекламний баланс як у боті
+        };
+
+        // Рендер початкових даних у шапці та гаманці
+        function updateUI() {
+            document.getElementById('user-name').innerText = userState.name;
+            document.getElementById('user-id').innerText = `ID: ${userState.id}`;
+            document.getElementById('main-balance').innerText = `${userState.mainBalance.toFixed(2)} GRAM`;
+            document.getElementById('adv-balance').innerText = `${userState.advBalance.toFixed(2)} GRAM`;
+            document.getElementById('wallet-main').innerText = userState.mainBalance.toFixed(2);
+            document.getElementById('wallet-adv').innerText = userState.advBalance.toFixed(2);
+            document.getElementById('ref-link-box').innerText = `https://t.me/socialukrboost_bot?start=${userState.id}`;
+        }
 
         // Перемикання вкладок
         function switchTab(tabName, element) {
@@ -293,27 +402,29 @@
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             
             document.getElementById('tab-' + tabName).classList.add('active');
-            element.classList.add('active');
+            if (element) element.classList.add('active');
         }
 
-        // Функція монетизації: відправка даних у бот про перегляд реклами
+        // РЕАКЦІЯ НА МОНЕТИЗАЦІЮ БЛОКУ: Динамічне оновлення інтерфейсу та зв'язок з ботом
         function watchAd() {
-            // Імітація або реальний виклик реклами (наприклад, інтеграція Adsgram / Telegram Ads)
-            tg.showConfirm("Бажаєте переглянути коротку рекламну вставку для отримання бонусу?", (confirmed) => {
+            tg.showConfirm("Переглянути рекламний матеріал та отримати +0.05 GRAM на баланс виводу?", (confirmed) => {
                 if (confirmed) {
-                    // Надсилаємо дані назад у Python бот через sendData
-                    const payload = JSON.stringify({ event: "ad_watched", reward: 0.01 });
+                    // Збільшуємо баланс прямо в інтерфейсі (миттєва реакція)
+                    userState.mainBalance += 0.05;
+                    updateUI();
+
+                    // Надсилаємо дані на бекенд бота
+                    const payload = JSON.stringify({ event: "watch_ad", reward: 0.05, user_id: userState.id });
                     tg.sendData(payload);
-                    tg.showAlert("✅ Рекламу переглянуто! Нагороду зараховано.");
+
+                    tg.showAlert("🎉 Вітаємо! Рекламу зараховано, +0.05 GRAM додано на ваш баланс виводу.");
                 }
             });
         }
 
-        // Завантаження демо-завдань у міні-апку (повністю синхронізовано з логікою бота)
-        function loadTasks() {
-            const container = document.getElementById('tasks-list');
-            // Тут ви можете підключити fetch до вашого бекенду або вивести актуальні завдання
-            container.innerHTML = `
+        // Рендер завдань
+        function renderTasks() {
+            const htmlContent = `
                 <div class="task-card">
                     <div class="task-header">
                         <span class="task-title">📢 Підписатися на канал News⚡️Україна</span>
@@ -329,9 +440,12 @@
                     <button class="btn-task" onclick="tg.openLink('https://socialukrboost.pp.ua')">Перейти на сайт</button>
                 </div>
             `;
+            document.getElementById('quick-tasks').innerHTML = htmlContent;
+            document.getElementById('full-tasks-list').innerHTML = htmlContent;
         }
 
-        loadTasks();
+        updateUI();
+        renderTasks();
     </script>
 </body>
 </html>
