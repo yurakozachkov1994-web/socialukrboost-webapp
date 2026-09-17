@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Social Boost</title>
-    <!-- Підключаємо офіційний Telegram Web App SDK -->
+    <title>Social Boost | Просування соцмереж</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -15,209 +14,181 @@
             --button-text-color: var(--tg-theme-button-text-color, #ffffff);
             --card-bg: var(--tg-theme-secondary-bg-color, #202b38);
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            padding-bottom: 70px; /* Відступ для нижнього меню */
+            margin: 0; padding: 0;
+            padding-bottom: 75px;
         }
-
-        .container {
-            padding: 16px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            font-size: 20px;
-            margin: 0;
-        }
-
-        .user-info {
-            background: var(--card-bg);
-            padding: 12px 16px;
-            border-radius: 12px;
-            margin-bottom: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Стилі для карток завдань */
-        .task-card {
+        .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 16px; font-weight: bold; font-size: 18px; }
+        
+        .card {
             background: var(--card-bg);
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
-        .task-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .task-reward {
-            color: #4cd964;
-            font-weight: 500;
-            font-size: 14px;
-            margin-bottom: 12px;
-        }
-
+        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+        .card-desc { font-size: 14px; color: var(--hint-color); margin-bottom: 12px; }
+        
         .btn {
             background-color: var(--button-color);
             color: var(--button-text-color);
-            border: none;
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-size: 14px;
-            font-weight: 600;
-            width: 100%;
-            cursor: pointer;
-            text-align: center;
+            border: none; border-radius: 8px;
+            padding: 10px 16px; font-size: 14px; font-weight: 600;
+            width: 100%; cursor: pointer; text-align: center; margin-top: 8px;
+        }
+        .input-field {
+            width: 100%; box-sizing: border-box;
+            background: var(--bg-color); color: var(--text-color);
+            border: 1px solid var(--hint-color); border-radius: 8px;
+            padding: 10px; font-size: 14px; margin-bottom: 8px;
         }
 
-        .btn:active {
-            opacity: 0.8;
-        }
-
-        /* Нижня панель навігації (як у додатках) */
+        /* Навігація внизу (як кнопки в боті) */
         .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            position: fixed; bottom: 0; left: 0; right: 0;
             background: var(--card-bg);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 4px; padding: 6px;
             border-top: 1px solid rgba(255,255,255,0.1);
         }
-
         .nav-item {
-            background: none;
-            border: none;
-            color: var(--hint-color);
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
+            background: none; border: none; color: var(--hint-color);
+            font-size: 11px; cursor: pointer; display: flex;
+            flex-direction: column; align-items: center; gap: 2px;
+            padding: 6px 0; border-radius: 6px;
         }
+        .nav-item.active { color: var(--button-color); background: rgba(255,255,255,0.05); }
+        .nav-item span { font-size: 16px; }
 
-        .nav-item.active {
-            color: var(--button-color);
-        }
-
-        .nav-item svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="header">
-            <h1>Social Boost</h1>
-        </div>
+        <div class="header" id="app-title">Social Boost</div>
 
-        <!-- Блок балансу користувача -->
-        <div class="user-info">
-            <span>Баланс:</span>
-            <strong id="user-balance">0.04 GRAM</strong>
-        </div>
-
-        <!-- Вкладка 1: Заробити -->
+        <!-- 1. ЗАРОБИТИ -->
         <div id="tab-earn" class="tab-content active">
-            <div class="task-card">
-                <div class="task-title">💡 Підписка на тікток</div>
-                <div class="task-reward">💎 Винагорода: 0.04 GRAM</div>
-                <button class="btn" onclick="completeTask()">Перейти та виконати</button>
+            <div id="tasks-container">
+                <div class="card">
+                    <div class="card-title">💡 Підписка на тікток</div>
+                    <div class="card-desc">Винагорода: 0.04 GRAM</div>
+                    <button class="btn" onclick="tg.showAlert('Завдання в процесі перевірки!')">Перейти та виконати</button>
+                </div>
             </div>
         </div>
 
-        <!-- Вкладка 2: Профіль -->
+        <!-- 2. ПРОФІЛЬ -->
         <div id="tab-profile" class="tab-content">
-            <div class="task-card">
-                <div class="task-title">Ваш профіль</div>
-                <p id="user-name">Користувач Telegram</p>
-                <p>ID: <span id="user-id">-</span></p>
+            <div class="card">
+                <div class="card-title">Мій профіль</div>
+                <p>Ім'я: <span id="p-name">-</span></p>
+                <p>ID: <span id="p-id">-</span></p>
+                <p>Баланс: <strong id="p-balance" style="color: #4cd964;">0 GRAM</strong></p>
             </div>
         </div>
 
-        <!-- Вкладка 3: Реферали -->
-        <div id="tab-referrals" class="tab-content">
-            <div class="task-card">
-                <div class="task-title">Реферальна програма</div>
-                <p style="color: var(--hint-color); font-size: 14px;">Запрошуйте друзів та отримуйте відсоток від їх заробітку.</p>
-                <button class="btn" onclick="copyRefLink()">Скопіювати реф. посилання</button>
+        <!-- 3. РЕКЛАМА -->
+        <div id="tab-ads" class="tab-content">
+            <div class="card">
+                <div class="card-title">📢 Реклама та просування</div>
+                <div class="card-desc">Створіть завдання для підписок або переглядів вашого каналу/проєкту.</div>
+                <button class="btn" onclick="tg.showAlert('Створення рекламної кампанії доступне з ПК або через менеджера.')">Створити кампанію</button>
+            </div>
+        </div>
+
+        <!-- 4. РЕФЕРАЛИ -->
+        <div id="tab-refs" class="tab-content">
+            <div class="card">
+                <div class="card-title">👥 Реферальна програма</div>
+                <div class="card-desc">Запрошуйте друзів та отримуйте бонуси за кожного активного користувача.</div>
+                <button class="btn" onclick="copyRef()">Скопіювати посилання</button>
+            </div>
+        </div>
+
+        <!-- 5. ПРОМОКОД -->
+        <div id="tab-promo" class="tab-content">
+            <div class="card">
+                <div class="card-title">🎟 Ввести промокод</div>
+                <input type="text" id="promo-input" class="input-field" placeholder="Введіть код...">
+                <button class="btn" onclick="applyPromo()">Активувати</button>
+            </div>
+        </div>
+
+        <!-- 6. АМБАСАДОР -->
+        <div id="tab-ambassador" class="tab-content">
+            <div class="card">
+                <div class="card-title">🤝 Стати амбасадором</div>
+                <div class="card-desc">Отримуйте особливі умови та максимальний відсоток від партнерської мережі.</div>
+                <button class="btn" onclick="tg.showAlert заявка надіслана>Подати заявку</button>
+            </div>
+        </div>
+
+        <!-- 7. ДОПОМОГА -->
+        <div id="tab-help" class="tab-content">
+            <div class="card">
+                <div class="card-title">ℹ️ Допомога та підтримка</div>
+                <div class="card-desc">Виникли питання щодо виплат чи завдань? Звертайтеся до нашої служби підтримки.</div>
+                <button class="btn" onclick="window.Telegram.WebApp.openTelegramLink('https://t.me/support')">Написати підтримці</button>
             </div>
         </div>
     </div>
 
-    <!-- Нижнє меню -->
+    <!-- НИЖНЯ ПАНЕЛЬ (КНОПКИ МЕНЮ) -->
     <div class="nav-bar">
-        <button class="nav-item active" onclick="switchTab('earn', this)">
-            <span>📋</span> Заробити
-        </button>
-        <button class="nav-item" onclick="switchTab('profile', this)">
-            <span>💰</span> Профіль
-        </button>
-        <button class="nav-item" onclick="switchTab('referrals', this)">
-            <span>👥</span> Реферали
-        </button>
+        <button class="nav-item active" onclick="switchTab('earn', this)"><span>📋</span>Заробити</button>
+        <button class="nav-item" onclick="switchTab('ads', this)"><span>📢</span>Реклама</button>
+        <button class="nav-item" onclick="switchTab('profile', this)"><span>💰</span>Профіль</button>
+        <button class="nav-item" onclick="switchTab('refs', this)"><span>👥</span>Реферали</button>
+        <button class="nav-item" onclick="switchTab('promo', this)"><span>🎟</span>Промо</button>
+        <button class="nav-item" onclick="switchTab('ambassador', this)"><span>🤝</span>Амбасадор</button>
+        <button class="nav-item" onclick="switchTab('help', this)"><span>ℹ️</span>Допомога</button>
     </div>
 
     <script>
-        // Ініціалізація Telegram Web App
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Розгортаємо на весь екран
+        tg.expand();
 
-        // Отримуємо дані користувача з Telegram, якщо вони є
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            const user = tg.initDataUnsafe.user;
-            document.getElementById('user-name').innerText = user.first_name + (user.last_name ? ' ' + user.last_name : '');
-            document.getElementById('user-id').innerText = user.id;
+        let user = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : { id: 12345, first_name: "Гість" };
+        
+        document.getElementById('p-name').innerText = user.first_name;
+        document.getElementById('p-id').innerText = user.id;
+
+        // Завантаження даних з вашого бекенду
+        async function fetchUserData() {
+            try {
+                let res = await fetch(`https://socialukrboost.pp.ua/api/user?telegram_id=${user.id}`);
+                let data = await res.json();
+                if(data.balance !== undefined) {
+                    document.getElementById('p-balance').innerText = data.balance + ' GRAM';
+                }
+            } catch(e) { console.log("Бекенд офлайн, працює клінінг"); }
         }
+        fetchUserData();
 
-        // Функція перемикання вкладок
-        function switchTab(tabName, element) {
-            // Приховуємо всі вкладки
+        function switchTab(tabName, btn) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-
-            // Показуємо потрібну
             document.getElementById('tab-' + tabName).classList.add('active');
-            element.classList.add('active');
+            btn.classList.add('active');
         }
 
-        function completeTask() {
-            tg.showAlert('Завдання виконано! Кошти зараховано на баланс.');
+        function copyRef() {
+            navigator.clipboard.writeText(`https://t.me/socialukrboostbot/app?start=ref_${user.id}`);
+            tg.showAlert('Посилання скопійовано!');
         }
 
-        function copyRefLink() {
-            navigator.clipboard.writeText(`https://t.me/socialukrboostbot/app?start=ref_${tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 0}`);
-            tg.showAlert('Реферальне посилання скопійовано!');
+        async function applyPromo() {
+            let code = document.getElementById('promo-input').value;
+            if(!code) return tg.showAlert('Введіть промокод!');
+            tg.showAlert('Промокод успішно активовано!');
         }
     </script>
 </body>
